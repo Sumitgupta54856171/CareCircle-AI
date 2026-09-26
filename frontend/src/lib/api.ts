@@ -52,3 +52,49 @@ export const circleApi = {
   inviteEmail: (email: string) =>
     apiRequest('/circles/invite-email', { method: 'POST', body: JSON.stringify({ email }) }),
 };
+
+export const medicationApi = {
+  getTodaySchedule: () => apiRequest<{
+    schedule: Array<{
+      medicationId: string;
+      name: string;
+      dosage: string;
+      timeSlot: string;
+      instructions: string;
+      status: 'pending' | 'taken' | 'missed' | 'skipped';
+      logId: string | null;
+      confirmedAt: string | null;
+    }>;
+    summary: {
+      totalDoses: number;
+      takenDoses: number;
+      adherenceRate: number;
+    };
+  }>('/medications/today'),
+
+  getAll: () => apiRequest('/medications'),
+
+  add: (payload: {
+    name: string;
+    dosage: string;
+    frequency?: string;
+    times: string[];
+    instructions?: string;
+  }) => apiRequest('/medications', { method: 'POST', body: JSON.stringify(payload) }),
+
+  logStatus: (
+    medicationId: string,
+    payload: {
+      status: 'taken' | 'missed' | 'skipped';
+      timeSlot: string;
+      notes?: string;
+    }
+  ) =>
+    apiRequest(`/medications/${medicationId}/log`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  delete: (medicationId: string) =>
+    apiRequest(`/medications/${medicationId}`, { method: 'DELETE' }),
+};
