@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Camera, Sparkles, RefreshCw, ShieldCheck, Activity } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Camera, Sparkles, RefreshCw, ShieldCheck, Activity, HeartPulse } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { useMonitoring } from '../hooks/useMonitoring';
@@ -8,6 +9,7 @@ import { CheckinResultCard } from '../components/monitoring/CheckinResultCard';
 import { CheckinHistoryTimeline } from '../components/monitoring/CheckinHistoryTimeline';
 
 export default function CheckinPage() {
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const {
     latestRecord,
@@ -55,6 +57,14 @@ export default function CheckinPage() {
             >
               <RefreshCw className="w-3.5 h-3.5" />
               Refresh
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/burnout')}
+              className="bg-rose-500/20 border-rose-300/40 text-rose-100 hover:bg-rose-500/30 gap-1.5 text-xs cursor-pointer"
+            >
+              <HeartPulse className="w-3.5 h-3.5 text-rose-300" />
+              Caregiver Load
             </Button>
           </div>
         </div>

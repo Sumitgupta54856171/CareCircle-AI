@@ -3,7 +3,11 @@ import logging
 from google import genai
 from google.genai import types
 from app.config import GOOGLE_CLOUD_PROJECT, GOOGLE_CLOUD_LOCATION
-from app.schemas.monitoring import MonitoringAnalysisResponse
+from app.schemas.monitoring import (
+    MonitoringAnalysisResponse,
+    CaregiverBurnoutRequest,
+    CaregiverBurnoutResponse,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -116,6 +120,126 @@ class MonitoringService:
             recommendation="Everything looks steady. Remember to take a 5-minute stretch break and drink a glass of fresh water.",
             confidence=0.85,
             rawAnalysis={"mode": "fallback_estimation"},
+            source="fallback-engine"
+        )
+
+    async def analyze_caregiver_burnout(
+        self,
+        data: CaregiverBurnoutRequest
+    ) -> CaregiverBurnoutResponse:
+        """
+        Analyzes caregiver load, sleep, active hours, and psychological signals using Gemini 2.5 Flash.
+        Synthesizes a burnout score (0-100), capacity rating, clinical summary, and actionable self-care respite plan.
+        """
+        if self.client:
+            try:
+                system_instruction = (
+                    "You are CareCircle AI Caregiver Resilience Specialist. Family caregivers bear enormous invisible "
+                    "physical and emotional weight. Analyze the caregiver's self-reported strain and active circle workload "
+                    "with deep clinical empathy and supportive boundary guidance."
+                )
+
+                prompt = (
+                    f"Evaluate caregiver load and burnout signals for {data.caregiverName} caring for {data.patientName}.\n"
+                    f"- Sleep quality: {data.sleepQuality}\n"
+                    f"- Active daily caregiving hours: {data.hoursActive}\n"
+                    f"- Self-rated emotional load (1-5): {data.emotionalLoad}\n"
+                    f"- Self-rated physical fatigue (1-5): {data.physicalFatigue}\n"
+                    f"- Currently feeling overwhelmed: {'Yes' if data.feelingOverwhelmed else 'No'}\n"
+                    f"- Circle active alerts pending: {data.activeAlertCount}\n"
+                    f"- Circle pending tasks today: {data.pendingTasksCount}\n"
+                    f"- Personal reflections/notes: {data.caregiverNotes or 'None provided'}\n\n"
+                    "Calculate:\n"
+                    "1. burnoutScore: 0 to 100 overall burnout risk score.\n"
+                    "2. stressScore: 0 to 100 emotional stress score.\n"
+                    "3. fatigueScore: 0 to 100 physical exhaustion score.\n"
+                    "4. capacityLevel: exactly one of ['optimal', 'moderate', 'pacing_needed', 'burnout_risk'].\n"
+                    "5. summary: 1-2 sentences summarizing current capacity and strain markers.\n"
+                    "6. copilotAdvice: 2-3 sentences of compassionate, realistic respite guidance and boundary setting.\n"
+                    "7. suggestedActions: 2-4 short, concrete action strings (e.g., 'Take a 20-min mindful pause', 'Delegate Rahul evening stroll', 'Hydrate & gentle stretch').\n\n"
+                    "Return ONLY a JSON object with these EXACT keys:\n"
+                    "{\n"
+                    '  "burnoutScore": <int 0-100>,\n'
+                    '  "stressScore": <int 0-100>,\n'
+                    '  "fatigueScore": <int 0-100>,\n'
+                    '  "capacityLevel": "<optimal|moderate|pacing_needed|burnout_risk>",\n'
+                    '  "summary": "<string>",\n'
+                    '  "copilotAdvice": "<string>",\n'
+                    '  "suggestedActions": ["<string>", ...]\n'
+                    "}"
+                )
+
+                response = self.client.models.generate_content(
+                    model=self.model_name,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        system_instruction=system_instruction,
+                        temperature=0.3
+                    )
+                )
+
+                if response and response.text:
+                    parsed = json.loads(response.text.strip())
+                    return CaregiverBurnoutResponse(
+                        burnoutScore=int(parsed.get("burnoutScore", 45)),
+                        stressScore=int(parsed.get("stressScore", 40)),
+                        fatigueScore=int(parsed.get("fatigueScore", 42)),
+                        capacityLevel=str(parsed.get("capacityLevel", "moderate")),
+                        summary=str(parsed.get("summary", "Caregiver is managing a balanced routine with manageable fatigue.")),
+                        copilotAdvice=str(parsed.get("copilotAdvice", "Prioritize a brief 15-minute rest pause today and share remaining tasks.")),
+                        suggestedActions=list(parsed.get("suggestedActions", ["Take a 15-min rest", "Hydrate with a glass of water"])),
+                        confidence=0.92,
+                        rawAnalysis=parsed,
+                        source="gemini-vertex-ai"
+                    )
+            except Exception as e:
+                logger.error(f"[MonitoringService Burnout Analysis Error]: {e}", exc_info=True)
+
+        # Resilient algorithmic fallback
+        emotional_contrib = ((data.emotionalLoad or 3) - 1) * 6.25  # 0 to 25
+        fatigue_contrib = ((data.physicalFatigue or 3) - 1) * 6.25    # 0 to 25
+        sleep_contrib = 20 if data.sleepQuality == "poor" else (10 if data.sleepQuality == "interrupted" else 0)
+        overwhelmed_contrib = 18 if data.feelingOverwhelmed else 0
+        alert_contrib = min((data.activeAlertCount or 0) * 4, 16)
+        task_contrib = min((data.pendingTasksCount or 0) * 2, 10)
+
+        raw_score = int(emotional_contrib + fatigue_contrib + sleep_contrib + overwhelmed_contrib + alert_contrib + task_contrib)
+        burnout_score = max(8, min(raw_score, 96))
+        stress_score = max(10, min(int(emotional_contrib * 2 + (15 if data.feelingOverwhelmed else 5)), 95))
+        fatigue_score = max(10, min(int(fatigue_contrib * 2 + sleep_contrib), 95))
+
+        if burnout_score < 40:
+            capacity = "optimal"
+            summary = "Caregiver demonstrates strong energy reserves and manageable care demands."
+            advice = "Your pacing is working well. Keep honoring your regular sleep schedule and personal hydration breaks."
+            actions = ["Maintain current routine", "Log regular breaks", "Drink fresh water"]
+        elif burnout_score < 68:
+            capacity = "moderate"
+            summary = "Moderate caregiving load with noticeable physical or emotional fatigue accumulating."
+            advice = "You are carrying steady responsibilities. Consider taking a 15-minute quiet respite and delegate non-critical items."
+            actions = ["Schedule 15-min pause", "Share updates with Care Circle", "Evening wind-down routine"]
+        elif burnout_score < 84:
+            capacity = "pacing_needed"
+            summary = "Elevated caregiver strain detected with disrupted sleep or high cognitive load."
+            advice = "Your body and mind are signaling fatigue. It is essential to transfer 1 or 2 tasks to secondary circle members today."
+            actions = ["Delegate daily tasks", "Take an uninterrupted 30-min break", "Notify Care Circle for backup"]
+        else:
+            capacity = "burnout_risk"
+            summary = "Acute caregiver exhaustion risk. Immediate respite and support delegation required."
+            advice = "You have given so much. Continuing at this pace puts your own health at risk. Please step back, breathe, and ask your circle to step in."
+            actions = ["Trigger Circle respite nudge", "Rest immediately", "Consult healthcare partner"]
+
+        return CaregiverBurnoutResponse(
+            burnoutScore=burnout_score,
+            stressScore=stress_score,
+            fatigueScore=fatigue_score,
+            capacityLevel=capacity,
+            summary=summary,
+            copilotAdvice=advice,
+            suggestedActions=actions,
+            confidence=0.88,
+            rawAnalysis={"mode": "algorithmic_fallback"},
             source="fallback-engine"
         )
 

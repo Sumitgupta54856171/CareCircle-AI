@@ -204,4 +204,267 @@ router.get('/latest', protect, async (req, res) => {
   }
 });
 
+// @route   POST /api/monitoring/caregiver-burnout
+// @desc    Evaluate caregiver burnout signals using Gemini 2.5 Flash and track load
+// @access  Private
+router.post('/caregiver-burnout', protect, async (req, res) => {
+  try {
+    if (!req.circle) {
+      return res.status(400).json({
+        message: 'You must belong to an active Care Circle to track caregiver load.',
+      });
+    }
+
+    const {
+      sleepQuality = 'interrupted',
+      hoursActive = 8,
+      emotionalLoad = 3,
+      physicalFatigue = 3,
+      feelingOverwhelmed = false,
+      notes = '',
+    } = req.body;
+
+    const patientInfo = req.circle.patientId || { fullName: 'Patient' };
+
+    // Contextual workload discovery
+    const activeAlertCount = await Alert.countDocuments({
+      careCircleId: req.circle._id,
+      status: { $in: ['new', 'acknowledged'] },
+    });
+
+    let pendingTasksCount = 0;
+    try {
+      const PlanAndTask = require('../models/PlanAndTask');
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      const plan = await PlanAndTask.findOne({
+        careCircleId: req.circle._id,
+        date: { $gte: startOfDay },
+      });
+      if (plan && Array.isArray(plan.caregiverTasks)) {
+        pendingTasksCount = plan.caregiverTasks.filter((t) => t.status === 'pending').length;
+      }
+    } catch (e) {
+      // Non-critical fallback
+    }
+
+    let analysis = null;
+
+    // Call FastAPI AI Service
+    try {
+      const fastApiUrl = process.env.FASTAPI_URL || 'http://localhost:8000';
+      const response = await axios.post(
+        `${fastApiUrl}/analyze/caregiver-burnout`,
+        {
+          caregiverName: req.user.fullName || 'Caregiver',
+          patientName: patientInfo.fullName || 'Patient',
+          sleepQuality,
+          hoursActive: Number(hoursActive),
+          emotionalLoad: Number(emotionalLoad),
+          physicalFatigue: Number(physicalFatigue),
+          feelingOverwhelmed: Boolean(feelingOverwhelmed),
+          activeAlertCount,
+          pendingTasksCount,
+          caregiverNotes: notes,
+        },
+        { timeout: 12000 }
+      );
+
+      if (response.data && typeof response.data.burnoutScore === 'number') {
+        analysis = response.data;
+      }
+    } catch (fastApiErr) {
+      console.warn('[Burnout] FastAPI AI service unavailable or timed out:', fastApiErr.message);
+    }
+
+    // Fallback algorithmic assessment if FastAPI unavailable
+    if (!analysis) {
+      const emotionalVal = (Number(emotionalLoad) - 1) * 6.25;
+      const fatigueVal = (Number(physicalFatigue) - 1) * 6.25;
+      const sleepVal = sleepQuality === 'poor' ? 20 : sleepQuality === 'interrupted' ? 10 : 0;
+      const overVal = feelingOverwhelmed ? 18 : 0;
+      const raw = emotionalVal + fatigueVal + sleepVal + overVal + Math.min(activeAlertCount * 4, 15);
+      const score = Math.max(10, Math.min(Math.round(raw), 95));
+
+      analysis = {
+        burnoutScore: score,
+        stressScore: Math.round(Math.min(95, emotionalVal * 2 + (feelingOverwhelmed ? 15 : 5))),
+        fatigueScore: Math.round(Math.min(95, fatigueVal * 2 + sleepVal)),
+        capacityLevel: score < 40 ? 'optimal' : score < 68 ? 'moderate' : score < 84 ? 'pacing_needed' : 'burnout_risk',
+        summary: score < 68 ? 'Caregiver load is currently within manageable parameters.' : 'Caregiver is experiencing noticeable cumulative fatigue and strain.',
+        copilotAdvice: 'Take a dedicated 15-minute quiet recovery break, stay hydrated, and share high-effort tasks with circle members.',
+        suggestedActions: ['Take a 15-min rest pause', 'Hydrate and stretch', 'Review circle task delegation'],
+        confidence: 0.88,
+        source: 'fallback-engine',
+      };
+    }
+
+    // Save record to monitoring_records
+    const record = await MonitoringRecord.create({
+      careCircleId: req.circle._id,
+      userId: req.user._id,
+      type: 'caregiver_burnout',
+      source: 'manual',
+      data: {
+        burnoutScore: analysis.burnoutScore,
+        stressScore: analysis.stressScore,
+        fatigueScore: analysis.fatigueScore,
+        capacityLevel: analysis.capacityLevel,
+        mood: analysis.capacityLevel === 'optimal' ? 'Energized' : analysis.capacityLevel === 'moderate' ? 'Balanced' : 'Strained',
+        expressionSummary: analysis.summary,
+        recommendation: analysis.copilotAdvice,
+        suggestedActions: analysis.suggestedActions,
+        sleepQuality,
+        hoursActive,
+        emotionalLoad,
+        physicalFatigue,
+        feelingOverwhelmed,
+        notes,
+        rawAnalysis: analysis,
+        confidence: analysis.confidence || 0.9,
+      },
+      timestamp: new Date(),
+      processedAt: new Date(),
+    });
+
+    // Notify connected care circle members via Socket.io
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`care-circle:${req.circle._id}`).emit('monitoring:new', record);
+      io.to(`care-circle:${req.circle._id}`).emit('burnout:update', record);
+    }
+
+    // Trigger alert if burnoutScore >= 70
+    let createdAlert = null;
+    if (analysis.burnoutScore >= 70) {
+      const isSevere = analysis.burnoutScore >= 85;
+      createdAlert = await Alert.create({
+        careCircleId: req.circle._id,
+        triggeredFor: req.user._id,
+        severity: isSevere ? 'high' : 'medium',
+        type: 'caregiver_burnout',
+        title: `Caregiver Capacity Alert: ${req.user.fullName} is reaching burnout threshold`,
+        message: `${analysis.summary} AI Co-Pilot advised: "${analysis.copilotAdvice}"`,
+        dataSnapshot: {
+          burnoutScore: analysis.burnoutScore,
+          stressScore: analysis.stressScore,
+          fatigueScore: analysis.fatigueScore,
+          capacityLevel: analysis.capacityLevel,
+        },
+        suggestedActions: [
+          { label: 'Chat with AI Co-Pilot for Respite', actionType: 'nav_chat' },
+          { label: 'Rebalance Daily Tasks', actionType: 'nav_plan' },
+        ],
+        status: 'new',
+      });
+
+      if (io) {
+        io.to(`care-circle:${req.circle._id}`).emit('alert:new', createdAlert);
+      }
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: 'Caregiver load assessment saved successfully.',
+      record,
+      alert: createdAlert,
+    });
+  } catch (error) {
+    console.error('[Caregiver Burnout Error]:', error);
+    return res.status(500).json({
+      message: 'Failed to record caregiver burnout: ' + error.message,
+    });
+  }
+});
+
+// @route   GET /api/monitoring/caregiver-burnout/latest
+// @desc    Get the most recent caregiver burnout assessment
+// @access  Private
+router.get('/caregiver-burnout/latest', protect, async (req, res) => {
+  try {
+    if (!req.circle) {
+      return res.json({ record: null });
+    }
+
+    const record = await MonitoringRecord.findOne({
+      careCircleId: req.circle._id,
+      type: 'caregiver_burnout',
+    })
+      .sort({ timestamp: -1 })
+      .populate('userId', 'fullName role');
+
+    return res.json({ record });
+  } catch (error) {
+    console.error('[Burnout Latest Error]:', error);
+    return res.status(500).json({ message: 'Failed to retrieve latest burnout record' });
+  }
+});
+
+// @route   GET /api/monitoring/caregiver-burnout/history
+// @desc    Get past caregiver burnout assessment history (last 14 check-ins)
+// @access  Private
+router.get('/caregiver-burnout/history', protect, async (req, res) => {
+  try {
+    if (!req.circle) {
+      return res.json({ records: [] });
+    }
+
+    const records = await MonitoringRecord.find({
+      careCircleId: req.circle._id,
+      type: 'caregiver_burnout',
+    })
+      .sort({ timestamp: -1 })
+      .limit(14)
+      .populate('userId', 'fullName role');
+
+    return res.json({ records });
+  } catch (error) {
+    console.error('[Burnout History Error]:', error);
+    return res.status(500).json({ message: 'Failed to retrieve burnout history' });
+  }
+});
+
+// @route   POST /api/monitoring/caregiver-burnout/nudge
+// @desc    Proactively send a circle respite nudge to request assistance
+// @access  Private
+router.post('/caregiver-burnout/nudge', protect, async (req, res) => {
+  try {
+    if (!req.circle) {
+      return res.status(400).json({ message: 'No active Care Circle found' });
+    }
+
+    const alert = await Alert.create({
+      careCircleId: req.circle._id,
+      triggeredFor: req.user._id,
+      severity: 'medium',
+      type: 'caregiver_burnout',
+      title: `${req.user.fullName} requested Care Circle Respite & Backup`,
+      message: `${req.user.fullName} is experiencing elevated caregiving fatigue today and requested circle assistance with pending patient support tasks.`,
+      dataSnapshot: {
+        requestedBy: req.user.fullName,
+        timestamp: new Date(),
+      },
+      suggestedActions: [
+        { label: 'View Tasks to Assist', actionType: 'nav_plan' },
+        { label: 'Open Circle Chat', actionType: 'nav_chat' },
+      ],
+      status: 'new',
+    });
+
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`care-circle:${req.circle._id}`).emit('alert:new', alert);
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: 'Care circle respite nudge sent to members.',
+      alert,
+    });
+  } catch (error) {
+    console.error('[Burnout Nudge Error]:', error);
+    return res.status(500).json({ message: 'Failed to send respite nudge' });
+  }
+});
+
 module.exports = router;

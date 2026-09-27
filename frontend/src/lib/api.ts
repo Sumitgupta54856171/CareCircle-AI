@@ -251,6 +251,48 @@ export interface MonitoringRecord {
   createdAt: string;
 }
 
+export interface CaregiverBurnoutData {
+  burnoutScore: number;
+  stressScore: number;
+  fatigueScore: number;
+  capacityLevel: 'optimal' | 'moderate' | 'pacing_needed' | 'burnout_risk';
+  mood?: string;
+  expressionSummary: string;
+  recommendation: string;
+  suggestedActions?: string[];
+  sleepQuality?: string;
+  hoursActive?: number;
+  emotionalLoad?: number;
+  physicalFatigue?: number;
+  feelingOverwhelmed?: boolean;
+  notes?: string;
+  confidence?: number;
+}
+
+export interface CaregiverBurnoutRecord {
+  _id: string;
+  careCircleId: string;
+  userId: {
+    _id: string;
+    fullName: string;
+    role: string;
+  };
+  type: 'caregiver_burnout';
+  source: string;
+  data: CaregiverBurnoutData;
+  timestamp: string;
+  createdAt: string;
+}
+
+export interface CaregiverBurnoutSubmission {
+  sleepQuality: 'restful' | 'interrupted' | 'poor';
+  hoursActive: number;
+  emotionalLoad: number;
+  physicalFatigue: number;
+  feelingOverwhelmed: boolean;
+  notes?: string;
+}
+
 export const monitoringApi = {
   submitCheckin: (formData: FormData) =>
     apiRequest<{
@@ -271,5 +313,101 @@ export const monitoringApi = {
     apiRequest<{
       record: MonitoringRecord | null;
     }>('/monitoring/latest'),
+
+  submitCaregiverBurnout: (payload: CaregiverBurnoutSubmission) =>
+    apiRequest<{
+      success: boolean;
+      message: string;
+      record: CaregiverBurnoutRecord;
+      alert?: AlertItem | null;
+    }>('/monitoring/caregiver-burnout', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  getCaregiverBurnoutLatest: () =>
+    apiRequest<{
+      record: CaregiverBurnoutRecord | null;
+    }>('/monitoring/caregiver-burnout/latest'),
+
+  getCaregiverBurnoutHistory: () =>
+    apiRequest<{
+      records: CaregiverBurnoutRecord[];
+    }>('/monitoring/caregiver-burnout/history'),
+
+  sendCaregiverRespiteNudge: () =>
+    apiRequest<{
+      success: boolean;
+      message: string;
+      alert: AlertItem;
+    }>('/monitoring/caregiver-burnout/nudge', {
+      method: 'POST',
+    }),
 };
+
+export interface AlertSuggestedAction {
+  label: string;
+  actionType: 'nav_plan' | 'nav_meds' | 'nav_chat' | 'call' | string;
+  param?: string;
+}
+
+export interface AlertItem {
+  _id: string;
+  careCircleId: string;
+  triggeredFor?: {
+    _id: string;
+    fullName: string;
+    role: string;
+  };
+  severity: 'low' | 'medium' | 'high' | 'emergency';
+  type: string;
+  title: string;
+  message: string;
+  dataSnapshot?: any;
+  status: 'new' | 'acknowledged' | 'resolved' | 'dismissed';
+  suggestedActions?: AlertSuggestedAction[];
+  acknowledgedBy?: {
+    _id: string;
+    fullName: string;
+    role: string;
+  };
+  acknowledgedAt?: string;
+  resolvedBy?: {
+    _id: string;
+    fullName: string;
+    role: string;
+  };
+  resolvedAt?: string;
+  createdAt: string;
+}
+
+export const alertApi = {
+  getAll: () =>
+    apiRequest<{
+      alerts: AlertItem[];
+      activeCount: number;
+    }>('/alerts'),
+
+  acknowledge: (id: string) =>
+    apiRequest<{ success: boolean; alert: AlertItem }>(`/alerts/${id}/acknowledge`, {
+      method: 'PATCH',
+    }),
+
+  resolve: (id: string) =>
+    apiRequest<{ success: boolean; alert: AlertItem }>(`/alerts/${id}/resolve`, {
+      method: 'PATCH',
+    }),
+
+  create: (payload: {
+    type?: string;
+    title?: string;
+    message?: string;
+    severity?: string;
+  }) =>
+    apiRequest<{ success: boolean; alert: AlertItem }>('/alerts', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+};
+
 

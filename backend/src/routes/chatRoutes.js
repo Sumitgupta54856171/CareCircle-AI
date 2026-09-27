@@ -4,6 +4,7 @@ const axios = require('axios');
 const ChatMessage = require('../models/ChatMessage');
 const Medication = require('../models/Medication');
 const PlanAndTask = require('../models/PlanAndTask');
+const Alert = require('../models/Alert');
 const { protect } = require('../middleware/auth');
 
 // Context-aware AI Co-pilot fallback response engine
@@ -131,6 +132,14 @@ router.post('/message', protect, async (req, res) => {
 
     const patientInfo = req.circle.patientId || req.user;
 
+    // Fetch active alerts for circle context
+    const activeAlerts = await Alert.find({
+      careCircleId: req.circle._id,
+      status: { $in: ['new', 'acknowledged'] },
+    })
+      .sort({ createdAt: -1 })
+      .limit(3);
+
     let aiReplyText = '';
 
     // 3. Try forwarding to FastAPI AI engine if available
@@ -145,8 +154,13 @@ router.post('/message', protect, async (req, res) => {
           patientName: patientInfo.fullName,
           conditions: patientInfo.conditions || [],
           medications: medications.map((m) => ({ name: m.name, dosage: m.dosage, times: m.times })),
+          alerts: activeAlerts.map((a) => ({
+            title: a.title,
+            message: a.message,
+            severity: a.severity,
+          })),
         },
-        { timeout: 3500 }
+        { timeout: 4000 }
       );
 
       if (response.data && response.data.reply) {

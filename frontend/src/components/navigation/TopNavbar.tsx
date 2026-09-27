@@ -1,8 +1,9 @@
 import { useLocation } from 'react-router-dom';
 import { LogoMark } from './LogoMark';
+import { NotificationDropdown } from './NotificationDropdown';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { Bell, Sun, Moon, LogOut } from 'lucide-react';
+import { Sun, Moon, LogOut } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { toggleDarkMode } from '../../store/slices/uiSlice';
 
@@ -27,7 +28,7 @@ const PATH_TITLES: Record<string, string> = {
 export function TopNavbar({ user, onLogout }: TopNavbarProps) {
   const location = useLocation();
   const dispatch = useAppDispatch();
-  const { isDarkMode, unreadAlertsCount } = useAppSelector((state) => state.ui);
+  const { isDarkMode } = useAppSelector((state) => state.ui);
 
   const isPatient = user?.role === 'patient';
   const initials = user?.fullName
@@ -73,18 +74,8 @@ export function TopNavbar({ user, onLogout }: TopNavbarProps) {
           {isDarkMode ? <Sun className="h-4 w-4 text-amber-500" /> : <Moon className="h-4 w-4" />}
         </Button>
 
-        {/* Notifications Bell with Dot */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative h-9 w-9 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 rounded-xl cursor-pointer"
-          aria-label="Alerts"
-        >
-          <Bell className="h-4 w-4" />
-          {unreadAlertsCount > 0 && (
-            <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-900" />
-          )}
-        </Button>
+        {/* Notifications Popover Dropdown */}
+        <NotificationDropdown />
 
         {user && (
           <>

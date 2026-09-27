@@ -1,6 +1,8 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { LogoMark } from './LogoMark';
 import { Badge } from '../ui/badge';
+import { useAlerts } from '../../hooks/useAlerts';
+import { useCaregiverBurnout } from '../../hooks/useCaregiverBurnout';
 import {
   Home,
   Users,
@@ -10,6 +12,7 @@ import {
   Bell,
   Activity,
   Camera,
+  HeartPulse,
 } from 'lucide-react';
 
 interface NavItem {
@@ -25,8 +28,9 @@ const NAV_ITEMS: NavItem[] = [
   { path: '/chat', label: 'AI Co-Pilot', icon: Sparkles, badge: 'Feature 3' },
   { path: '/plan', label: 'Daily Plan', icon: Calendar, badge: 'Feature 4' },
   { path: '/checkin', label: 'Camera Check-in', icon: Camera, badge: 'Feature 5' },
+  { path: '/alerts', label: 'Alerts & Safety', icon: Bell, badge: 'Feature 7' },
+  { path: '/burnout', label: 'Caregiver Load', icon: HeartPulse, badge: 'Feature 8' },
   { path: '/home', label: 'Home Dashboard', icon: Home },
-  { path: '/alerts', label: 'Alerts & Safety', icon: Bell },
 ];
 
 interface SidebarProps {
@@ -40,8 +44,26 @@ interface SidebarProps {
 export function Sidebar({ user }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { activeCount } = useAlerts();
+  const { burnoutScore, capacityLevel } = useCaregiverBurnout();
   const isPatient = user?.role === 'patient';
-  const energyScore = isPatient ? 82 : 45;
+  const displayScore = isPatient ? 82 : burnoutScore;
+
+  const getCapacityDesc = () => {
+    if (isPatient) return 'Optimal steady energy';
+    if (capacityLevel === 'optimal') return 'Optimal steady capacity';
+    if (capacityLevel === 'moderate') return 'Manageable care distribution';
+    if (capacityLevel === 'pacing_needed') return 'High load • Pacing needed';
+    return 'Critical burnout risk • Respite needed';
+  };
+
+  const getMeterColor = () => {
+    if (isPatient) return 'bg-[#0D9488]';
+    if (burnoutScore >= 85) return 'bg-rose-500';
+    if (burnoutScore >= 68) return 'bg-amber-500';
+    if (burnoutScore >= 40) return 'bg-teal-500';
+    return 'bg-emerald-500';
+  };
 
   return (
     <aside className="hidden lg:flex h-screen w-64 flex-col justify-between border-r border-slate-200 bg-white p-5 sticky top-0 z-20 dark:border-slate-800 dark:bg-slate-900 transition-colors">
@@ -70,6 +92,7 @@ export function Sidebar({ user }: SidebarProps) {
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const active = location.pathname.startsWith(item.path);
+            const isAlertsItem = item.path === '/alerts';
 
             return (
               <button
@@ -89,10 +112,16 @@ export function Sidebar({ user }: SidebarProps) {
                   />
                   <span>{item.label}</span>
                 </div>
-                {item.badge && (
-                  <Badge variant="teal" className="text-[10px] px-1.5 py-0 font-bold">
-                    {item.badge}
+                {isAlertsItem && activeCount > 0 ? (
+                  <Badge variant="destructive" className="text-[10px] px-1.5 py-0 font-bold animate-pulse">
+                    {activeCount} new
                   </Badge>
+                ) : (
+                  item.badge && (
+                    <Badge variant="teal" className="text-[10px] px-1.5 py-0 font-bold">
+                      {item.badge}
+                    </Badge>
+                  )
                 )}
               </button>
             );
@@ -102,26 +131,28 @@ export function Sidebar({ user }: SidebarProps) {
 
       {/* Footer Area with Energy / Care Load Meter */}
       <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-        <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-800/40">
+        <div
+          onClick={() => navigate(isPatient ? '/checkin' : '/burnout')}
+          className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-800/40 cursor-pointer hover:border-[#0D9488]/40 transition-colors"
+          title="Click to view detailed load & wellness telemetry"
+        >
           <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
             <span className="flex items-center gap-1.5">
               <Activity className="h-3.5 w-3.5 text-[#0D9488]" />
               {isPatient ? 'Your Energy' : 'Caregiver Load'}
             </span>
             <span className="tabular-nums font-bold text-[#0D9488]">
-              {energyScore}%
+              {displayScore}%
             </span>
           </div>
           <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
             <div
-              className={`h-full rounded-full transition-all duration-500 ${
-                isPatient ? 'bg-[#0D9488]' : 'bg-amber-500'
-              }`}
-              style={{ width: `${energyScore}%` }}
+              className={`h-full rounded-full transition-all duration-500 ${getMeterColor()}`}
+              style={{ width: `${displayScore}%` }}
             />
           </div>
           <p className="mt-1.5 text-[10px] text-slate-500 dark:text-slate-400">
-            {isPatient ? 'Optimal steady energy' : 'Manageable care distribution'}
+            {getCapacityDesc()}
           </p>
         </div>
 
