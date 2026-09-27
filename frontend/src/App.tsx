@@ -9,6 +9,8 @@ import { LoginPage } from './pages/LoginPage';
 import { CirclePage } from './pages/CirclePage';
 import { MedicationsPage } from './pages/MedicationsPage';
 import { ChatPage } from './pages/ChatPage';
+import { PlanPage } from './pages/PlanPage';
+import CheckinPage from './pages/CheckinPage';
 import { RoadmapPage } from './pages/RoadmapPage';
 
 export default function App() {
@@ -27,7 +29,8 @@ export default function App() {
                 <Route path="/circle" element={<CirclePage />} />
                 <Route path="/medications" element={<MedicationsPage />} />
                 <Route path="/chat" element={<ChatPage />} />
-                <Route path="/plan" element={<RoadmapPage />} />
+                <Route path="/plan" element={<PlanPage />} />
+                <Route path="/checkin" element={<CheckinPage />} />
                 <Route path="/home" element={<RoadmapPage />} />
                 <Route path="/alerts" element={<RoadmapPage />} />
                 <Route path="*" element={<Navigate to="/circle" replace />} />

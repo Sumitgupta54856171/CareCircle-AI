@@ -40,6 +40,16 @@ const medicationLogSchema = new mongoose.Schema(
       enum: ['photo', 'manual', 'voice'],
       default: 'manual',
     },
+    photoUrl: {
+      type: String,
+    },
+    aiVerification: {
+      isMatch: { type: Boolean, default: true },
+      isTaken: { type: Boolean, default: true },
+      confidence: { type: Number, default: 0.9 },
+      notes: { type: String, default: '' },
+      detectedDetails: { type: String, default: '' },
+    },
     notes: {
       type: String,
       default: '',

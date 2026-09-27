@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import GOOGLE_CLOUD_PROJECT, GOOGLE_CLOUD_LOCATION
 from app.routers.copilot import router as copilot_router
+from app.routers.monitoring import router as monitoring_router
+from app.routers.medication_vision import router as medication_vision_router
 
 app = FastAPI(
     title="CareCircle AI Service",
@@ -20,6 +22,8 @@ app.add_middleware(
 
 # Mount Modular Routers
 app.include_router(copilot_router)
+app.include_router(monitoring_router)
+app.include_router(medication_vision_router)
 
 @app.get("/")
 def read_root():

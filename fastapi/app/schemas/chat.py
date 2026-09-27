@@ -8,6 +8,7 @@ class ChatRequest(BaseModel):
     patientName: Optional[str] = "Patient"
     conditions: Optional[List[str]] = []
     medications: Optional[List[Dict[str, Any]]] = []
+    alerts: Optional[List[Dict[str, Any]]] = []
 
 class ChatResponse(BaseModel):
     reply: str

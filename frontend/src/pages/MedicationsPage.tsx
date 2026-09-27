@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { AdherenceCard } from '../components/medications/AdherenceCard';
 import { MedicationItem } from '../components/medications/MedicationItem';
 import { AddMedicationDialog } from '../components/medications/AddMedicationDialog';
+import { MedicationPhotoModal } from '../components/medications/MedicationPhotoModal';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { useMedications } from '../hooks/useMedications';
+import type { MedicationScheduleItem } from '../lib/api';
 import {
   Pill,
   Plus,
@@ -23,9 +25,11 @@ export function MedicationsPage() {
     isLoading,
     refetch,
     logStatus,
+    confirmPhoto,
   } = useMedications();
 
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [photoModalMed, setPhotoModalMed] = useState<MedicationScheduleItem | null>(null);
   const [loggingMedId, setLoggingMedId] = useState<string | null>(null);
 
   const handleLogStatus = async (
@@ -75,12 +79,12 @@ export function MedicationsPage() {
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                Feature 2: Medication List & Logging
+                Medication List & AI Photo Confirmation
               </h2>
-              <Badge variant="teal" className="text-[11px] py-0">Phase 1</Badge>
+              <Badge variant="teal" className="text-[11px] py-0">Feature 6 Active</Badge>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-400">
-              Shared real-time tracking for Patient and Caregiver with 1-click adherence logging.
+              Shared real-time tracking with 1-click logging and Gemini 2.5 Flash Vision photo confirmation.
             </p>
           </div>
         </div>
@@ -176,6 +180,7 @@ export function MedicationsPage() {
                     key={`${med.medicationId}-${med.timeSlot}-${idx}`}
                     medication={med}
                     onLog={handleLogStatus}
+                    onConfirmPhoto={(m) => setPhotoModalMed(m)}
                     isLogging={loggingMedId === med.medicationId}
                   />
                 ))}
@@ -195,6 +200,7 @@ export function MedicationsPage() {
                     key={`${med.medicationId}-${med.timeSlot}-${idx}`}
                     medication={med}
                     onLog={handleLogStatus}
+                    onConfirmPhoto={(m) => setPhotoModalMed(m)}
                     isLogging={loggingMedId === med.medicationId}
                   />
                 ))}
@@ -214,6 +220,7 @@ export function MedicationsPage() {
                     key={`${med.medicationId}-${med.timeSlot}-${idx}`}
                     medication={med}
                     onLog={handleLogStatus}
+                    onConfirmPhoto={(m) => setPhotoModalMed(m)}
                     isLogging={loggingMedId === med.medicationId}
                   />
                 ))}
@@ -267,6 +274,14 @@ export function MedicationsPage() {
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
         onSuccess={() => refetch()}
+      />
+
+      {/* Medication Photo Confirmation Modal */}
+      <MedicationPhotoModal
+        isOpen={!!photoModalMed}
+        medication={photoModalMed}
+        onClose={() => setPhotoModalMed(null)}
+        onConfirmPhoto={(medicationId, formData) => confirmPhoto({ medicationId, formData })}
       />
     </div>
   );

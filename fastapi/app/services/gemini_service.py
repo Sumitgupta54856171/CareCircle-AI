@@ -45,16 +45,22 @@ class GeminiService:
                         [f"{m.get('name')} ({m.get('dosage')}) at {', '.join(m.get('times', []))}" for m in req.medications]
                     )
 
+                alerts_str = ""
+                if req.alerts:
+                    alerts_str = "\nActive Care Circle Alerts: " + "; ".join(
+                        [f"[{a.get('severity', 'medium').upper()}] {a.get('title')}: {a.get('message')}" for a in req.alerts]
+                    )
+
                 prompt = (
                     f"You are the CareCircle AI Co-Pilot, an empathetic, supportive, and clinical-grade health assistant.\n"
                     f"You are conversing with the {role.upper()} of the Care Circle.\n"
                     f"User Name: {req.userName}\n"
                     f"Primary Patient: {patient_name}\n"
-                    f"Tracked Health Conditions: {conditions_str}{med_list_str}\n\n"
+                    f"Tracked Health Conditions: {conditions_str}{med_list_str}{alerts_str}\n\n"
                     f"Guiding Principles:\n"
                     f"1. Be empathetic, encouraging, and clear.\n"
                     f"2. If answering about medications, cite the user's scheduled medications listed above.\n"
-                    f"3. If the user feels tired, stressed, or burnt out, provide thoughtful respite and recovery advice.\n"
+                    f"3. If there are active alerts or the user feels tired/stressed, provide thoughtful respite and recovery advice.\n"
                     f"4. Keep replies concise and easy to read (2-4 sentences max).\n\n"
                     f"User message: {user_msg}"
                 )

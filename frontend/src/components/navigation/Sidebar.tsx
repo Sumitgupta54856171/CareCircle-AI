@@ -9,6 +9,7 @@ import {
   Sparkles,
   Bell,
   Activity,
+  Camera,
 } from 'lucide-react';
 
 interface NavItem {
@@ -22,7 +23,8 @@ const NAV_ITEMS: NavItem[] = [
   { path: '/circle', label: 'Care Circle', icon: Users, badge: 'Feature 1' },
   { path: '/medications', label: 'Medications', icon: Pill, badge: 'Feature 2' },
   { path: '/chat', label: 'AI Co-Pilot', icon: Sparkles, badge: 'Feature 3' },
-  { path: '/plan', label: 'Daily Plan', icon: Calendar },
+  { path: '/plan', label: 'Daily Plan', icon: Calendar, badge: 'Feature 4' },
+  { path: '/checkin', label: 'Camera Check-in', icon: Camera, badge: 'Feature 5' },
   { path: '/home', label: 'Home Dashboard', icon: Home },
   { path: '/alerts', label: 'Alerts & Safety', icon: Bell },
 ];

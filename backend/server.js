@@ -12,6 +12,8 @@ const circleRoutes = require('./src/routes/circleRoutes');
 const medicationRoutes = require('./src/routes/medicationRoutes');
 const taskRoutes = require('./src/routes/taskRoutes');
 const chatRoutes = require('./src/routes/chatRoutes');
+const monitoringRoutes = require('./src/routes/monitoringRoutes');
+const alertRoutes = require('./src/routes/alertRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -70,6 +72,8 @@ app.use('/api/circles', circleRoutes);
 app.use('/api/medications', medicationRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/monitoring', monitoringRoutes);
+app.use('/api/alerts', alertRoutes);
 
 // 404 Handler
 app.use((req, res) => {

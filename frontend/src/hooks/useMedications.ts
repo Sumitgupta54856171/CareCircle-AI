@@ -35,6 +35,20 @@ export function useMedications() {
     },
   });
 
+  // Confirm photo mutation
+  const confirmPhotoMutation = useMutation({
+    mutationFn: ({
+      medicationId,
+      formData,
+    }: {
+      medicationId: string;
+      formData: FormData;
+    }) => medicationApi.confirmPhoto(medicationId, formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['medications', 'today'] });
+    },
+  });
+
   return {
     schedule: todayScheduleQuery.data?.schedule || [],
     summary: todayScheduleQuery.data?.summary || {
@@ -49,5 +63,7 @@ export function useMedications() {
     isLogging: logStatusMutation.isPending,
     addMedication: addMedicationMutation.mutateAsync,
     isAdding: addMedicationMutation.isPending,
+    confirmPhoto: confirmPhotoMutation.mutateAsync,
+    isConfirmingPhoto: confirmPhotoMutation.isPending,
   };
 }

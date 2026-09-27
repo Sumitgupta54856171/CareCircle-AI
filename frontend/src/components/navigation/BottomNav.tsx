@@ -1,12 +1,12 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Users, Home, Pill, Calendar, Sparkles } from 'lucide-react';
+import { Users, Pill, Calendar, Sparkles, Camera } from 'lucide-react';
 
 const MOBILE_NAV_ITEMS = [
   { path: '/circle', label: 'Circle', icon: Users },
   { path: '/medications', label: 'Meds', icon: Pill },
+  { path: '/checkin', label: 'Check-in', icon: Camera },
   { path: '/chat', label: 'Chat', icon: Sparkles },
   { path: '/plan', label: 'Plan', icon: Calendar },
-  { path: '/home', label: 'Home', icon: Home },
 ];
 
 export function BottomNav() {
