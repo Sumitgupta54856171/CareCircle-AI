@@ -10,6 +10,7 @@
 [![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph_StateGraph-FF6F00)](https://langchain-ai.github.io/langgraph/)
 [![Socket.io](https://img.shields.io/badge/Real--Time-Socket.io-010101?logo=socket.io&logoColor=white)](https://socket.io/)
 [![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind_CSS-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
@@ -511,3 +512,10 @@ First/
   - Live facial check-in biometric analysis verified with Gemini 2.5 Flash Multimodal Vision.
   - Medication photo confirmation tested with packaging detection and confidence scoring.
   - LangGraph 3-node multi-agent planner tested with dynamic patient recovery and caregiver respite quotas.
+
+---
+
+## 12. License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+

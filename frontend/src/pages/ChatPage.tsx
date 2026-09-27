@@ -50,7 +50,7 @@ export function ChatPage({ user: propUser, circle: propCircle }: ChatPageProps) 
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] min-h-[500px] max-w-4xl mx-auto space-y-3">
+    <div className="flex flex-col h-[calc(100dvh-12rem)] lg:h-[calc(100vh-140px)] min-h-[380px] max-w-4xl mx-auto space-y-2 sm:space-y-3 mb-20 lg:mb-0">
       {/* Chat Header Card */}
       <Card className="border-slate-200/90 dark:border-slate-800 shadow-xs shrink-0">
         <CardHeader className="py-3 px-4 sm:px-6">

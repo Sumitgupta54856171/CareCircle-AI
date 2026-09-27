@@ -4,7 +4,6 @@ import { Badge } from '../ui/badge';
 import { useAlerts } from '../../hooks/useAlerts';
 import { useCaregiverBurnout } from '../../hooks/useCaregiverBurnout';
 import {
-  Home,
   Users,
   Pill,
   Calendar,
@@ -30,7 +29,6 @@ const NAV_ITEMS: NavItem[] = [
   { path: '/checkin', label: 'Wellness Check-in', icon: Camera },
   { path: '/alerts', label: 'Alerts & Safety', icon: Bell },
   { path: '/burnout', label: 'Caregiver Resilience', icon: HeartPulse },
-  { path: '/home', label: 'Dashboard', icon: Home },
 ];
 
 interface SidebarProps {

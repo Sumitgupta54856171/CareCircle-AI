@@ -45,16 +45,25 @@ export function useCaregiverBurnout() {
     latestQuery.data?.record || null;
   const history: CaregiverBurnoutRecord[] = historyQuery.data?.records || [];
 
-  const burnoutScore = latestRecord?.data?.burnoutScore ?? 42;
-  const stressScore = latestRecord?.data?.stressScore ?? 38;
-  const fatigueScore = latestRecord?.data?.fatigueScore ?? 40;
-  const capacityLevel = latestRecord?.data?.capacityLevel ?? 'moderate';
+  const burnoutScore =
+    typeof latestRecord?.data?.burnoutScore === 'number'
+      ? latestRecord.data.burnoutScore
+      : 25;
+  const stressScore =
+    typeof latestRecord?.data?.stressScore === 'number'
+      ? latestRecord.data.stressScore
+      : 22;
+  const fatigueScore =
+    typeof latestRecord?.data?.fatigueScore === 'number'
+      ? latestRecord.data.fatigueScore
+      : 24;
+  const capacityLevel = latestRecord?.data?.capacityLevel || 'optimal';
   const summary =
     latestRecord?.data?.expressionSummary ||
     'Caregiver load is currently within manageable parameters.';
   const recommendation =
     latestRecord?.data?.recommendation ||
-    'Prioritize a brief 15-minute rest pause today and share remaining tasks with your circle.';
+    'Prioritize regular hydration breaks today and share care tasks with your circle.';
   const suggestedActions =
     latestRecord?.data?.suggestedActions || [
       'Take a 15-min rest pause',

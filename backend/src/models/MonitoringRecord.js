@@ -32,15 +32,33 @@ const monitoringRecordSchema = new mongoose.Schema(
       default: 'camera',
     },
     data: {
-      heartRateEstimate: { type: Number },
-      stressScore: { type: Number, required: true }, // 0-100
-      fatigueScore: { type: Number, required: true }, // 0-100
-      fallRiskScore: { type: Number },
-      mood: { type: String, required: true },
-      expressionSummary: { type: String },
-      recommendation: { type: String },
-      rawAnalysis: { type: Object },
-      confidence: { type: Number, default: 0.85 },
+      type: new mongoose.Schema(
+        {
+          heartRateEstimate: { type: Number },
+          stressScore: { type: Number }, // 0-100
+          fatigueScore: { type: Number }, // 0-100
+          fallRiskScore: { type: Number },
+          burnoutScore: { type: Number }, // 0-100
+          capacityLevel: {
+            type: String,
+            enum: ['optimal', 'moderate', 'pacing_needed', 'burnout_risk'],
+            default: 'moderate',
+          },
+          sleepQuality: { type: String },
+          hoursActive: { type: Number },
+          emotionalLoad: { type: Number },
+          physicalFatigue: { type: Number },
+          feelingOverwhelmed: { type: Boolean },
+          notes: { type: String },
+          suggestedActions: [{ type: String }],
+          mood: { type: String, default: 'Balanced' },
+          expressionSummary: { type: String },
+          recommendation: { type: String },
+          rawAnalysis: { type: Object },
+          confidence: { type: Number, default: 0.85 },
+        },
+        { _id: false, strict: false }
+      ),
     },
     mediaRef: {
       type: String,
