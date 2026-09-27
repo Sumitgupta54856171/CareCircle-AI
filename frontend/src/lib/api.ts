@@ -188,6 +188,8 @@ export interface PlanData {
   caregiverTasks: TaskItem[];
   generatedBy: string;
   aiReasoning: string;
+  patientEnergyLevel?: string;
+  caregiverCapacity?: string;
 }
 
 export const taskApi = {
@@ -223,6 +225,23 @@ export const taskApi = {
     category?: string;
     estimatedMinutes?: number;
   }) => apiRequest('/tasks', { method: 'POST', body: JSON.stringify(payload) }),
+
+  generateAdaptivePlan: () =>
+    apiRequest<{
+      success: boolean;
+      message: string;
+      plan: PlanData;
+      metrics: {
+        patient: ProgressMetric;
+        caregiver: ProgressMetric;
+        overall: ProgressMetric;
+      };
+      aiReasoning: string;
+      patientEnergyLevel: string;
+      caregiverCapacity: string;
+    }>('/tasks/generate', {
+      method: 'POST',
+    }),
 };
 
 export interface MonitoringRecordData {

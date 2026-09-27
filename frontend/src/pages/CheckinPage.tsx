@@ -32,7 +32,7 @@ export default function CheckinPage() {
         <div className="relative z-10 max-w-xl space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-semibold text-teal-200 border border-white/10">
             <Sparkles className="w-3.5 h-3.5" />
-            Gemini 2.5 Flash Multimodal Vision
+            AI Facial Wellness Analysis
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
             Wellness Camera Check-in
@@ -161,7 +161,7 @@ export default function CheckinPage() {
                     AI Wellness Summary
                   </h4>
                   <p className="text-slate-500 leading-relaxed">
-                    Gemini Multimodal analyzes stress markers, fatigue signals, and suggests personalized recovery steps.
+                    Intelligent wellness analysis measures resting composure, fatigue indicators, and suggests personalized recovery steps.
                   </p>
                 </div>
               </div>

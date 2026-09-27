@@ -5,17 +5,14 @@ import { AddMedicationDialog } from '../components/medications/AddMedicationDial
 import { MedicationPhotoModal } from '../components/medications/MedicationPhotoModal';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
-import { Badge } from '../components/ui/badge';
 import { useMedications } from '../hooks/useMedications';
 import type { MedicationScheduleItem } from '../lib/api';
 import {
   Pill,
   Plus,
-  Sparkles,
   CheckCircle2,
   Clock,
   RefreshCw,
-  HeartHandshake,
 } from 'lucide-react';
 
 export function MedicationsPage() {
@@ -74,17 +71,16 @@ export function MedicationsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-gradient-to-r from-[#0D9488]/15 via-blue-50 to-slate-50 p-4 border border-[#0D9488]/20 dark:from-[#0D9488]/20 dark:via-slate-900 dark:to-slate-900">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0D9488] text-white">
-            <Sparkles className="h-5 w-5" />
+            <Pill className="h-5 w-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                Medication List & AI Photo Confirmation
+                Medications & Adherence Schedule
               </h2>
-              <Badge variant="teal" className="text-[11px] py-0">Feature 6 Active</Badge>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-400">
-              Shared real-time tracking with 1-click logging and Gemini 2.5 Flash Vision photo confirmation.
+              Shared real-time tracking with 1-click adherence logging and smart photo verification.
             </p>
           </div>
         </div>
@@ -254,20 +250,6 @@ export function MedicationsPage() {
           </CardContent>
         </Card>
       )}
-
-      {/* Feature 2 Verification Checklist */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-        <h3 className="font-semibold text-slate-800 dark:text-slate-200 text-sm mb-2 flex items-center gap-2">
-          <HeartHandshake className="h-4 w-4 text-[#0D9488]" />
-          Feature 2 Verification Checklist:
-        </h3>
-        <ol className="text-xs text-slate-600 dark:text-slate-400 space-y-1 list-decimal pl-4">
-          <li>Click <strong>Add Medication</strong> to save a prescription (e.g. <em>Atorvastatin 20mg</em> at 08:00).</li>
-          <li>See it automatically listed in today's schedule with its dosage and time slot.</li>
-          <li>Click the <strong>Taken</strong> button — notice the status changes immediately to green with the timestamp and your adherence rate increases!</li>
-          <li>If logged in as the Caregiver, refresh and view the exact same synchronized real-time adherence.</li>
-        </ol>
-      </div>
 
       {/* Add Medication Dialog Modal */}
       <AddMedicationDialog

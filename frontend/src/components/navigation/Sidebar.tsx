@@ -23,14 +23,14 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { path: '/circle', label: 'Care Circle', icon: Users, badge: 'Feature 1' },
-  { path: '/medications', label: 'Medications', icon: Pill, badge: 'Feature 2' },
-  { path: '/chat', label: 'AI Co-Pilot', icon: Sparkles, badge: 'Feature 3' },
-  { path: '/plan', label: 'Daily Plan', icon: Calendar, badge: 'Feature 4' },
-  { path: '/checkin', label: 'Camera Check-in', icon: Camera, badge: 'Feature 5' },
-  { path: '/alerts', label: 'Alerts & Safety', icon: Bell, badge: 'Feature 7' },
-  { path: '/burnout', label: 'Caregiver Load', icon: HeartPulse, badge: 'Feature 8' },
-  { path: '/home', label: 'Home Dashboard', icon: Home },
+  { path: '/circle', label: 'Care Circle', icon: Users },
+  { path: '/medications', label: 'Medications', icon: Pill },
+  { path: '/chat', label: 'AI Co-Pilot', icon: Sparkles },
+  { path: '/plan', label: 'Care Plan', icon: Calendar },
+  { path: '/checkin', label: 'Wellness Check-in', icon: Camera },
+  { path: '/alerts', label: 'Alerts & Safety', icon: Bell },
+  { path: '/burnout', label: 'Caregiver Resilience', icon: HeartPulse },
+  { path: '/home', label: 'Dashboard', icon: Home },
 ];
 
 interface SidebarProps {

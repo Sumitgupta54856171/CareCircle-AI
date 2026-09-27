@@ -135,7 +135,7 @@ export function CameraCheckinModal({ isOpen, onClose, onSubmit }: CameraCheckinM
       formData.append('file', capturedBlob, 'checkin_face.jpg');
 
       setTimeout(() => {
-        setAnalysisStep('Gemini 2.5 Flash Vision analyzing stress & facial tension...');
+        setAnalysisStep('Analyzing resting facial composure & wellness markers...');
       }, 800);
 
       setTimeout(() => {

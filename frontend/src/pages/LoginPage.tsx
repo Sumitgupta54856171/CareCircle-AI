@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '../components/ui/card';
-import { Badge } from '../components/ui/badge';
 import { LoginForm } from '../components/login/LoginForm';
 import { RegisterForm } from '../components/login/RegisterForm';
 import { useAuth } from '../hooks/useAuth';
@@ -40,9 +39,6 @@ export function LoginPage({ onAuthSuccess }: LoginPageProps) {
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
             CareCircle AI
           </h1>
-          <Badge variant="teal" className="text-xs">
-            Phase 1
-          </Badge>
         </div>
         <p className="text-sm text-slate-500 font-medium">
           Patient + Caregiver = One Adaptive Team
@@ -87,7 +83,7 @@ export function LoginPage({ onAuthSuccess }: LoginPageProps) {
       </Card>
 
       <p className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
-        Secure email-based authentication • Feature 1: User Roles & Care Circle
+        Secure email-based access for patients, caregivers, and families.
       </p>
     </div>
   );

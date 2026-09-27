@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
   Bell,
-  Sparkles,
   RefreshCw,
   Sun,
   ShieldCheck,
@@ -84,8 +83,8 @@ export function AlertsPage() {
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-600 via-teal-700 to-slate-900 text-white p-6 sm:p-8 shadow-lg">
         <div className="relative z-10 max-w-xl space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-semibold text-amber-200 border border-white/10">
-            <Sparkles className="w-3.5 h-3.5" />
-            Feature 7: Real-Time Alerts & Safety
+            <Bell className="w-3.5 h-3.5" />
+            Circle Safety Network
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-3">
             <span>Alerts & Safety</span>

@@ -35,6 +35,17 @@ export function useTasks() {
     },
   });
 
+  const generatePlanMutation = useMutation({
+    mutationFn: taskApi.generateAdaptivePlan,
+    onSuccess: (data) => {
+      queryClient.setQueryData(['tasks', 'today'], {
+        plan: data.plan,
+        metrics: data.metrics,
+      });
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'today'] });
+    },
+  });
+
   return {
     plan: tasksQuery.data?.plan,
     metrics: tasksQuery.data?.metrics || {
@@ -48,5 +59,7 @@ export function useTasks() {
     isToggling: toggleTaskMutation.isPending,
     addTask: addTaskMutation.mutateAsync,
     isAdding: addTaskMutation.isPending,
+    generateAdaptivePlan: generatePlanMutation.mutateAsync,
+    isGenerating: generatePlanMutation.isPending,
   };
 }

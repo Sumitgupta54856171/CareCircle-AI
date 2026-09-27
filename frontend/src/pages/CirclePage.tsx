@@ -11,9 +11,7 @@ import {
   Copy,
   Check,
   UserPlus,
-  Sparkles,
   ArrowRight,
-  Activity,
   RefreshCw,
 } from 'lucide-react';
 
@@ -93,12 +91,12 @@ export function CirclePage({
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-gradient-to-r from-[#0D9488]/15 via-blue-50 to-slate-50 p-4 border border-[#0D9488]/20 dark:from-[#0D9488]/20 dark:via-slate-900 dark:to-slate-900">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0D9488] text-white">
-            <Sparkles className="h-5 w-5" />
+            <Users className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Feature 1: User Roles & Care Circle</h2>
+            <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Care Circle & Coordination</h2>
             <p className="text-xs text-slate-600 dark:text-slate-400">
-              Email-authenticated linking between Patient and Caregiver in one shared circle.
+              Connected care team uniting Patient and Caregivers as one coordinated support network.
             </p>
           </div>
         </div>
@@ -113,7 +111,7 @@ export function CirclePage({
             <RefreshCw className="h-4 w-4" />
           </Button>
           <Badge variant="teal" className="text-xs px-3 py-1">
-            Phase 1 Active
+            Care Team Connected
           </Badge>
         </div>
       </div>
@@ -274,19 +272,6 @@ export function CirclePage({
           </CardContent>
         </Card>
       )}
-
-      {/* Guide box */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-        <h3 className="font-semibold text-slate-800 dark:text-slate-200 text-sm mb-2 flex items-center gap-2">
-          <Activity className="h-4 w-4 text-[#0D9488]" />
-          Feature 1 Test Verification Checklist:
-        </h3>
-        <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-1.5 list-disc pl-4">
-          <li><strong>Patient</strong> logs in via email and views their circle and unique code.</li>
-          <li><strong>Caregiver</strong> logs in via email and enters the invite code or patient email to join.</li>
-          <li>Both roles see each other under <strong>Circle Members</strong>.</li>
-        </ul>
-      </div>
     </div>
   );
 }

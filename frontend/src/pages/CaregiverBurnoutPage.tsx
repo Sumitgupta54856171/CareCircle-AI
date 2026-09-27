@@ -79,7 +79,7 @@ export function CaregiverBurnoutPage() {
       if (res?.alert) {
         setSuccessMessage('Assessment analyzed. A safety alert was issued to your Care Circle for support.');
       } else {
-        setSuccessMessage('Burnout signals analyzed and logged successfully by Gemini AI.');
+        setSuccessMessage('Wellness assessment analyzed and logged successfully.');
       }
       setNotes('');
     } catch (err: any) {
@@ -152,10 +152,10 @@ export function CaregiverBurnoutPage() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                Feature 8: Caregiver Burnout Signals
+                Caregiver Wellness & Resilience
               </h1>
               <Badge variant="teal" className="text-[10px] font-bold">
-                Adaptive Intelligence
+                Caregiver Support
               </Badge>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-400 max-w-xl mt-0.5">
@@ -314,15 +314,15 @@ export function CaregiverBurnoutPage() {
                   </div>
                   <div>
                     <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                      Gemini Co-Pilot Respite Guidance
+                      AI Co-Pilot Respite Guidance
                     </CardTitle>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                      Tailored specifically to current caregiver exhaustion signals
+                      Tailored specifically to current caregiver capacity and recovery needs
                     </p>
                   </div>
                 </div>
                 <Badge variant="outline" className="text-[10px]">
-                  Vertex AI 2.5 Flash
+                  Personalized Support
                 </Badge>
               </div>
             </CardHeader>
@@ -553,7 +553,7 @@ export function CaregiverBurnoutPage() {
                   disabled={isSubmitting}
                 >
                   <HeartPulse className="h-4 w-4 mr-1.5" />
-                  {isSubmitting ? 'Evaluating Burnout Signals...' : 'Analyze Signals with Gemini AI'}
+                  {isSubmitting ? 'Evaluating Wellness Signals...' : 'Analyze Resilience & Wellness'}
                 </Button>
               </form>
             </CardContent>

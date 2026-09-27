@@ -65,7 +65,7 @@ export function ChatPage({ user: propUser, circle: propCircle }: ChatPageProps) 
                     CareCircle AI Co-Pilot
                   </h2>
                   <Badge variant="teal" className="text-[10px] py-0 px-1.5 font-bold">
-                    Feature 3
+                    Clinical Co-Pilot
                   </Badge>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400">

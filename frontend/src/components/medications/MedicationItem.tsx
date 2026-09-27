@@ -102,7 +102,7 @@ export function MedicationItem({
                 onClick={() => onConfirmPhoto?.(medication)}
                 disabled={isLogging}
                 className="h-8.5 px-2.5 text-xs text-teal-700 dark:text-teal-300 border-teal-300 dark:border-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950/40 cursor-pointer font-medium"
-                title="Verify or update dose with Gemini Vision photo"
+                title="Verify or update dose with medication photo"
               >
                 <Camera className="h-3.5 w-3.5 mr-1" />
                 {isPhotoConfirmed ? 'Update Photo' : 'Add Photo'}
@@ -132,7 +132,7 @@ export function MedicationItem({
                 onClick={() => onConfirmPhoto?.(medication)}
                 disabled={isLogging}
                 className="h-8.5 px-2.5 text-xs text-teal-700 dark:text-teal-300 border-teal-300 dark:border-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950/40 cursor-pointer font-medium"
-                title="Confirm dose with Gemini Vision photo"
+                title="Confirm dose with medication photo"
               >
                 <Camera className="h-3.5 w-3.5 mr-1" />
                 Photo
@@ -156,7 +156,7 @@ export function MedicationItem({
                 onClick={() => onConfirmPhoto?.(medication)}
                 disabled={isLogging}
                 className="h-8.5 px-2.5 text-xs text-teal-700 dark:text-teal-300 border-teal-300 dark:border-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950/40 cursor-pointer font-medium"
-                title="Verify dose with Gemini Vision photo"
+                title="Verify dose with medication photo"
               >
                 <Camera className="h-3.5 w-3.5 mr-1" />
                 Photo

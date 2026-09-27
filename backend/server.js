@@ -71,6 +71,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/circles', circleRoutes);
 app.use('/api/medications', medicationRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/plans', taskRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/monitoring', monitoringRoutes);
 app.use('/api/alerts', alertRoutes);

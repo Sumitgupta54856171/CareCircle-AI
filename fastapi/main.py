@@ -4,6 +4,7 @@ from app.config import GOOGLE_CLOUD_PROJECT, GOOGLE_CLOUD_LOCATION
 from app.routers.copilot import router as copilot_router
 from app.routers.monitoring import router as monitoring_router
 from app.routers.medication_vision import router as medication_vision_router
+from app.routers.plan import router as plan_router
 
 app = FastAPI(
     title="CareCircle AI Service",
@@ -24,6 +25,7 @@ app.add_middleware(
 app.include_router(copilot_router)
 app.include_router(monitoring_router)
 app.include_router(medication_vision_router)
+app.include_router(plan_router)
 
 @app.get("/")
 def read_root():
@@ -32,7 +34,7 @@ def read_root():
         "service": "CareCircle AI Microservice",
         "project": GOOGLE_CLOUD_PROJECT,
         "location": GOOGLE_CLOUD_LOCATION,
-        "features": ["modular-architecture", "vertex-ai", "gemini-2.5-flash", "co-pilot-chat"]
+        "features": ["modular-architecture", "vertex-ai", "gemini-2.5-flash", "co-pilot-chat", "langgraph-adaptive-planner"]
     }
 
 @app.get("/health")

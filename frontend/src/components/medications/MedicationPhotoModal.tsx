@@ -137,7 +137,7 @@ export function MedicationPhotoModal({
       formData.append('timeSlot', medication.timeSlot);
 
       setTimeout(() => {
-        setVerifyStep('Gemini 2.5 Flash Vision reading packaging & pill details...');
+        setVerifyStep('Verifying medication packaging & dosage details...');
       }, 700);
 
       setTimeout(() => {
@@ -370,7 +370,7 @@ export function MedicationPhotoModal({
                   className="w-full sm:w-auto font-semibold shadow-md gap-2 cursor-pointer"
                 >
                   <Sparkles className="w-4 h-4" />
-                  {isVerifying ? 'Verifying...' : 'Verify with Gemini Vision'}
+                  {isVerifying ? 'Verifying...' : 'Verify Medication Photo'}
                 </Button>
               )}
 
@@ -389,7 +389,7 @@ export function MedicationPhotoModal({
 
           <p className="text-[11px] text-slate-500 text-center flex items-center justify-center gap-1.5 pt-1">
             <AlertCircle className="w-3 h-3 text-slate-400" />
-            Verified safely on device using Gemini 2.5 Flash Vision.
+            Verified securely through intelligent medication photo analysis.
           </p>
         </CardContent>
       </Card>

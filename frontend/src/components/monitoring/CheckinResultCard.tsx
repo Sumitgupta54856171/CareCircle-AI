@@ -155,7 +155,7 @@ export function CheckinResultCard({ record, isLatest = false }: CheckinResultCar
         <div className="flex items-center justify-between pt-1 text-[11px] text-slate-400 dark:text-slate-500">
           <span className="flex items-center gap-1">
             <CheckCircle2 className="w-3 h-3 text-teal-500" />
-            Analyzed by Gemini 2.5 Flash Multimodal Vision
+            Analyzed by AI Wellness Vision Check-in
           </span>
           <span>Source: Camera check-in</span>
         </div>
