@@ -3,7 +3,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../co
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
-import { circleApi } from '../lib/api';
+import { useAuth } from '../hooks/useAuth';
+import { useCircle } from '../hooks/useCircle';
 import {
   Users,
   ShieldCheck,
@@ -13,15 +14,26 @@ import {
   Sparkles,
   ArrowRight,
   Activity,
+  RefreshCw,
 } from 'lucide-react';
 
 interface CirclePageProps {
-  user: any;
-  circle: any;
-  onCircleUpdated: (circle: any) => void;
+  user?: any;
+  circle?: any;
+  onCircleUpdated?: (circle: any) => void;
 }
 
-export function CirclePage({ user, circle, onCircleUpdated }: CirclePageProps) {
+export function CirclePage({
+  user: propUser,
+  circle: propCircle,
+  onCircleUpdated,
+}: CirclePageProps) {
+  const { user: authUser } = useAuth();
+  const { circle: queryCircle, joinCircle, inviteEmail: sendInviteEmail, refetch } = useCircle();
+
+  const user = propUser || authUser;
+  const circle = propCircle || queryCircle;
+
   const [joinCode, setJoinCode] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
   const [actionMessage, setActionMessage] = useState('');
@@ -44,10 +56,10 @@ export function CirclePage({ user, circle, onCircleUpdated }: CirclePageProps) {
 
     try {
       const isEmail = joinCode.includes('@');
-      const res = await circleApi.joinCircle(
+      const res = await joinCircle(
         isEmail ? { patientEmail: joinCode.trim() } : { inviteCode: joinCode.trim() }
       );
-      onCircleUpdated(res.circle);
+      if (onCircleUpdated) onCircleUpdated(res.circle);
       setActionMessage('Successfully linked to Care Circle!');
       setJoinCode('');
     } catch (err: any) {
@@ -64,11 +76,10 @@ export function CirclePage({ user, circle, onCircleUpdated }: CirclePageProps) {
     setIsSubmitting(true);
 
     try {
-      const res = await circleApi.inviteEmail(inviteEmail.trim());
+      const res = await sendInviteEmail(inviteEmail.trim());
       setActionMessage(res.message);
       setInviteEmail('');
-      const updated = await circleApi.getMyCircle();
-      onCircleUpdated(updated);
+      refetch();
     } catch (err: any) {
       setActionMessage(err.message || 'Invite failed.');
     } finally {
@@ -79,27 +90,38 @@ export function CirclePage({ user, circle, onCircleUpdated }: CirclePageProps) {
   return (
     <div className="space-y-6">
       {/* Banner */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-gradient-to-r from-[#0D9488]/15 via-blue-50 to-slate-50 p-4 border border-[#0D9488]/20">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-gradient-to-r from-[#0D9488]/15 via-blue-50 to-slate-50 p-4 border border-[#0D9488]/20 dark:from-[#0D9488]/20 dark:via-slate-900 dark:to-slate-900">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0D9488] text-white">
             <Sparkles className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-slate-900">Feature 1: User Roles & Care Circle</h2>
-            <p className="text-xs text-slate-600">
+            <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Feature 1: User Roles & Care Circle</h2>
+            <p className="text-xs text-slate-600 dark:text-slate-400">
               Email-authenticated linking between Patient and Caregiver in one shared circle.
             </p>
           </div>
         </div>
-        <Badge variant="teal" className="text-xs px-3 py-1">
-          Phase 1 Active
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            className="cursor-pointer h-9 px-2.5"
+            title="Refresh Care Circle"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+          <Badge variant="teal" className="text-xs px-3 py-1">
+            Phase 1 Active
+          </Badge>
+        </div>
       </div>
 
       {circle ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Main Circle Card */}
-          <Card className="md:col-span-2 shadow-sm">
+          <Card className="md:col-span-2 shadow-sm border-slate-200/90 dark:border-slate-800">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -109,7 +131,7 @@ export function CirclePage({ user, circle, onCircleUpdated }: CirclePageProps) {
                 <Badge variant="outline">Circle Active</Badge>
               </div>
               <CardDescription>
-                Primary Patient: <span className="font-semibold text-slate-800">{circle.patientId?.fullName || user.fullName}</span> ({circle.patientId?.email || user.email})
+                Primary Patient: <span className="font-semibold text-slate-800 dark:text-slate-200">{circle.patientId?.fullName || user?.fullName}</span> ({circle.patientId?.email || user?.email})
               </CardDescription>
             </CardHeader>
 
@@ -135,16 +157,16 @@ export function CirclePage({ user, circle, onCircleUpdated }: CirclePageProps) {
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
                   Circle Members ({circle.members?.length || 1})
                 </p>
-                <div className="divide-y divide-slate-100 rounded-xl border border-slate-100 bg-slate-50/50">
+                <div className="divide-y divide-slate-100 rounded-xl border border-slate-100 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/40 dark:divide-slate-800">
                   {circle.members?.map((m: any, idx: number) => (
                     <div key={idx} className="flex items-center justify-between p-3">
                       <div className="flex items-center gap-2.5">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-slate-700 text-xs font-bold">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-200 text-xs font-bold">
                           {m.userId?.fullName?.charAt(0) || 'U'}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-slate-800">{m.userId?.fullName}</p>
-                          <p className="text-xs text-slate-500">{m.userId?.email}</p>
+                          <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{m.userId?.fullName}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">{m.userId?.email}</p>
                         </div>
                       </div>
                       <Badge variant={m.roleInCircle === 'primary_caregiver' ? 'amber' : 'secondary'}>
@@ -156,7 +178,7 @@ export function CirclePage({ user, circle, onCircleUpdated }: CirclePageProps) {
               </div>
 
               {actionMessage && (
-                <div className="rounded-xl bg-blue-50 border border-blue-200 p-3 text-xs text-blue-800 font-medium">
+                <div className="rounded-xl bg-blue-50 border border-blue-200 p-3 text-xs text-blue-800 font-medium dark:bg-blue-950/40 dark:border-blue-900 dark:text-blue-300">
                   {actionMessage}
                 </div>
               )}
@@ -164,17 +186,17 @@ export function CirclePage({ user, circle, onCircleUpdated }: CirclePageProps) {
           </Card>
 
           {/* Linking / Invite Card */}
-          <Card className="shadow-sm">
+          <Card className="shadow-sm border-slate-200/90 dark:border-slate-800">
             <CardHeader>
               <CardTitle className="text-base">Circle Linking</CardTitle>
               <CardDescription>Share code or invite via email</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-xs font-medium text-slate-600 block mb-1">
+                <label className="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-1">
                   Unique Circle Invite Code
                 </label>
-                <div className="flex items-center gap-2 rounded-xl bg-slate-100 p-2.5 border border-slate-200">
+                <div className="flex items-center gap-2 rounded-xl bg-slate-100 p-2.5 border border-slate-200 dark:bg-slate-800 dark:border-slate-700">
                   <span className="font-mono text-base font-bold tracking-widest text-[#0D9488] flex-1">
                     {circle.inviteCode}
                   </span>
@@ -182,18 +204,18 @@ export function CirclePage({ user, circle, onCircleUpdated }: CirclePageProps) {
                     variant="outline"
                     size="sm"
                     onClick={handleCopyInviteCode}
-                    className="h-8 px-2.5"
+                    className="h-8 px-2.5 cursor-pointer"
                   >
                     {copiedCode ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
                   </Button>
                 </div>
-                <p className="text-[11px] text-slate-500 mt-1">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
                   Share this code with your caregiver or family member.
                 </p>
               </div>
 
               <form onSubmit={handleInviteCaregiver} className="space-y-2">
-                <label className="text-xs font-medium text-slate-600 block">
+                <label className="text-xs font-medium text-slate-600 dark:text-slate-400 block">
                   Invite Member via Email
                 </label>
                 <div className="flex gap-2">
@@ -205,7 +227,7 @@ export function CirclePage({ user, circle, onCircleUpdated }: CirclePageProps) {
                     className="h-9 text-xs"
                     required
                   />
-                  <Button type="submit" size="sm" className="h-9 px-3 shrink-0" disabled={isSubmitting}>
+                  <Button type="submit" size="sm" className="h-9 px-3 shrink-0 cursor-pointer" disabled={isSubmitting}>
                     <UserPlus className="h-3.5 w-3.5 mr-1" />
                     Invite
                   </Button>
@@ -216,7 +238,7 @@ export function CirclePage({ user, circle, onCircleUpdated }: CirclePageProps) {
         </div>
       ) : (
         /* If logged in Caregiver without a linked circle */
-        <Card className="max-w-xl mx-auto shadow-md">
+        <Card className="max-w-xl mx-auto shadow-md border-slate-200/90 dark:border-slate-800">
           <CardHeader className="text-center">
             <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-[#0D9488]/15 text-[#0D9488]">
               <ShieldCheck className="h-6 w-6" />
@@ -234,7 +256,7 @@ export function CirclePage({ user, circle, onCircleUpdated }: CirclePageProps) {
                 </div>
               )}
               <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                   Patient Circle Invite Code or Email
                 </label>
                 <Input
@@ -244,7 +266,7 @@ export function CirclePage({ user, circle, onCircleUpdated }: CirclePageProps) {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full font-semibold" disabled={isSubmitting}>
+              <Button type="submit" className="w-full font-semibold cursor-pointer" disabled={isSubmitting}>
                 Join Care Circle
                 <ArrowRight className="h-4 w-4 ml-1.5" />
               </Button>
@@ -254,12 +276,12 @@ export function CirclePage({ user, circle, onCircleUpdated }: CirclePageProps) {
       )}
 
       {/* Guide box */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-5">
-        <h3 className="font-semibold text-slate-800 text-sm mb-2 flex items-center gap-2">
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+        <h3 className="font-semibold text-slate-800 dark:text-slate-200 text-sm mb-2 flex items-center gap-2">
           <Activity className="h-4 w-4 text-[#0D9488]" />
           Feature 1 Test Verification Checklist:
         </h3>
-        <ul className="text-xs text-slate-600 space-y-1.5 list-disc pl-4">
+        <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-1.5 list-disc pl-4">
           <li><strong>Patient</strong> logs in via email and views their circle and unique code.</li>
           <li><strong>Caregiver</strong> logs in via email and enters the invite code or patient email to join.</li>
           <li>Both roles see each other under <strong>Circle Members</strong>.</li>

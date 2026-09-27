@@ -1,81 +1,29 @@
-import { useState, useEffect } from 'react';
-import { Sidebar, type ScreenId } from './Sidebar';
+import { Outlet } from 'react-router-dom';
+import { Sidebar } from './Sidebar';
 import { TopNavbar } from './TopNavbar';
 import { BottomNav } from './BottomNav';
+import { useAuth } from '../../hooks/useAuth';
 
-interface AppLayoutProps {
-  children: React.ReactNode;
-  currentScreen: ScreenId;
-  onNavigate: (screen: ScreenId) => void;
-  user: {
-    fullName: string;
-    email: string;
-    role: 'patient' | 'caregiver';
-  } | null;
-  onLogout: () => void;
-}
-
-const SCREEN_TITLES: Record<ScreenId, string> = {
-  circle: 'Care Circle Management',
-  home: 'Dashboard & Vitals',
-  meds: 'Medication Schedule',
-  plan: 'Adaptive Daily Plan',
-  chat: 'AI Health Co-Pilot',
-  alerts: 'Safety & Alerts',
-};
-
-export function AppLayout({
-  children,
-  currentScreen,
-  onNavigate,
-  user,
-  onLogout,
-}: AppLayoutProps) {
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  // Sync dark mode class on documentElement
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDarkMode]);
-
-  const toggleDarkMode = () => {
-    setIsDarkMode((prev) => !prev);
-  };
+export function AppLayout() {
+  const { user, logout } = useAuth();
 
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
-      {/* Desktop Sidebar */}
-      <Sidebar
-        currentScreen={currentScreen}
-        onNavigate={onNavigate}
-        user={user}
-      />
+      {/* Desktop Sidebar with React Router navigation */}
+      <Sidebar user={user} />
 
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col min-w-0">
         {/* Top Navbar */}
-        <TopNavbar
-          currentScreenTitle={SCREEN_TITLES[currentScreen]}
-          user={user}
-          onLogout={onLogout}
-          isDarkMode={isDarkMode}
-          onToggleDarkMode={toggleDarkMode}
-        />
+        <TopNavbar user={user} onLogout={logout} />
 
-        {/* Dynamic Screen Content */}
+        {/* Dynamic Nested Route Content */}
         <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 pb-24 lg:pb-10 max-w-5xl mx-auto w-full">
-          {children}
+          <Outlet />
         </main>
 
         {/* Mobile Bottom Navigation */}
-        <BottomNav
-          currentScreen={currentScreen}
-          onNavigate={onNavigate}
-        />
+        <BottomNav />
       </div>
     </div>
   );

@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { AdherenceCard } from '../components/medications/AdherenceCard';
 import { MedicationItem } from '../components/medications/MedicationItem';
 import { AddMedicationDialog } from '../components/medications/AddMedicationDialog';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { medicationApi } from '../lib/api';
+import { useMedications } from '../hooks/useMedications';
 import {
   Pill,
   Plus,
@@ -16,50 +16,17 @@ import {
   HeartHandshake,
 } from 'lucide-react';
 
-interface ScheduleItem {
-  medicationId: string;
-  name: string;
-  dosage: string;
-  timeSlot: string;
-  instructions: string;
-  status: 'pending' | 'taken' | 'missed' | 'skipped';
-  logId: string | null;
-  confirmedAt: string | null;
-}
-
 export function MedicationsPage() {
-  const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
-  const [summary, setSummary] = useState({
-    totalDoses: 0,
-    takenDoses: 0,
-    adherenceRate: 100,
-  });
-  const [loading, setLoading] = useState(true);
+  const {
+    schedule,
+    summary,
+    isLoading,
+    refetch,
+    logStatus,
+  } = useMedications();
+
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [loggingMedId, setLoggingMedId] = useState<string | null>(null);
-
-  const loadData = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await medicationApi.getTodaySchedule();
-      setSchedule(res.schedule || []);
-      setSummary(
-        res.summary || {
-          totalDoses: 0,
-          takenDoses: 0,
-          adherenceRate: 100,
-        }
-      );
-    } catch (err: any) {
-      console.error('Failed to load medication schedule:', err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
 
   const handleLogStatus = async (
     medicationId: string,
@@ -68,8 +35,7 @@ export function MedicationsPage() {
   ) => {
     try {
       setLoggingMedId(medicationId);
-      await medicationApi.logStatus(medicationId, { status, timeSlot });
-      await loadData();
+      await logStatus({ medicationId, status, timeSlot });
     } catch (err: any) {
       alert(err.message || 'Error updating medication status.');
     } finally {
@@ -87,7 +53,7 @@ export function MedicationsPage() {
   );
   const eveningDoses = schedule.filter((m) => m.timeSlot >= '17:00');
 
-  if (loading && schedule.length === 0) {
+  if (isLoading && schedule.length === 0) {
     return (
       <div className="flex h-64 items-center justify-center">
         <div className="flex flex-col items-center gap-2">
@@ -123,7 +89,7 @@ export function MedicationsPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={loadData}
+            onClick={() => refetch()}
             className="cursor-pointer h-9 px-2.5"
             title="Refresh schedule"
           >
@@ -300,7 +266,7 @@ export function MedicationsPage() {
       <AddMedicationDialog
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
-        onSuccess={loadData}
+        onSuccess={() => refetch()}
       />
     </div>
   );

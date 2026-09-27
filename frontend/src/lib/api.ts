@@ -98,3 +98,40 @@ export const medicationApi = {
   delete: (medicationId: string) =>
     apiRequest(`/medications/${medicationId}`, { method: 'DELETE' }),
 };
+
+export const chatApi = {
+  getHistory: () =>
+    apiRequest<
+      Array<{
+        _id: string;
+        senderId: string | null;
+        senderName: string;
+        senderType: 'user' | 'ai';
+        roleContext: string;
+        message: string;
+        createdAt: string;
+      }>
+    >('/chat/history'),
+
+  sendMessage: (message: string) =>
+    apiRequest<{
+      userMessage: {
+        _id: string;
+        senderName: string;
+        senderType: 'user';
+        message: string;
+        createdAt: string;
+      };
+      aiMessage: {
+        _id: string;
+        senderName: string;
+        senderType: 'ai';
+        message: string;
+        createdAt: string;
+      };
+    }>('/chat/message', {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+    }),
+};
+

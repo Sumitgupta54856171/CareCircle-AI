@@ -1,20 +1,18 @@
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Users, Home, Pill, Calendar, Sparkles } from 'lucide-react';
-import type { ScreenId } from './Sidebar';
 
-interface BottomNavProps {
-  currentScreen: ScreenId;
-  onNavigate: (screen: ScreenId) => void;
-}
-
-const MOBILE_NAV_ITEMS: { id: ScreenId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: 'circle', label: 'Circle', icon: Users },
-  { id: 'home', label: 'Home', icon: Home },
-  { id: 'meds', label: 'Meds', icon: Pill },
-  { id: 'plan', label: 'Plan', icon: Calendar },
-  { id: 'chat', label: 'Chat', icon: Sparkles },
+const MOBILE_NAV_ITEMS = [
+  { path: '/circle', label: 'Circle', icon: Users },
+  { path: '/medications', label: 'Meds', icon: Pill },
+  { path: '/chat', label: 'Chat', icon: Sparkles },
+  { path: '/plan', label: 'Plan', icon: Calendar },
+  { path: '/home', label: 'Home', icon: Home },
 ];
 
-export function BottomNav({ currentScreen, onNavigate }: BottomNavProps) {
+export function BottomNav() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-30 flex h-16 w-full items-center justify-around border-t border-slate-200 bg-white/95 px-2 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 lg:hidden"
@@ -22,12 +20,12 @@ export function BottomNav({ currentScreen, onNavigate }: BottomNavProps) {
     >
       {MOBILE_NAV_ITEMS.map((item) => {
         const Icon = item.icon;
-        const active = currentScreen === item.id;
+        const active = location.pathname.startsWith(item.path);
 
         return (
           <button
-            key={item.id}
-            onClick={() => onNavigate(item.id)}
+            key={item.path}
+            onClick={() => navigate(item.path)}
             className={`flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-1.5 transition-all duration-150 cursor-pointer ${
               active
                 ? 'text-[#0D9488] font-bold dark:text-[#0D9488]'
